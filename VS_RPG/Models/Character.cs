@@ -17,12 +17,9 @@ namespace VS_RPG.Models
 
         public int Agility { get; set; } = 10;
 
-        public List<Move> Moveset { get; set; } = new List<Move>();
+        public List<CharacterMove> CharacterMoves { get; set; }
 
         public RpgClass Class { get; set; } = RpgClass.Scrambler;
-
-       
-       
-
+     
     }
 }

@@ -9,52 +9,67 @@ using VS_RPG.Models;
 
 namespace VS_RPG.Services
 {
-    
-    public class CharacterService: ICharacterService
+
+    public class CharacterService : ICharacterService
     {
 
         private readonly DataContext _context;
+
+
 
         public CharacterService(DataContext context)
         {
             _context = context;
         }
-    
-        private static List<Move> defaultGuardPasserMoves = new List<Move>()
+
+
+
+
+        //public async Task<ServiceResponse<List<Character>>> AddCharacter(Character newCharacter)
+        //{
+        //    var serviceResponse = new ServiceResponse<List<Character>>();
+        //    var dbCharacters = await _context.Characters.ToListAsync();
+        //    var id = dbCharacters.Max(c => c.Id) + 1;
+        //    newCharacter.Id = id;
+        //    dbCharacters.Add(newCharacter);
+        //    serviceResponse.Data = dbCharacters;
+        //    return serviceResponse;
+        //}
+
+        public async Task<ServiceResponse<Character>> AddCharacter(Character newCharacter)
         {
-            new Move(1, "Double Leg", 2),
-            new Move(2, "Single Leg", 2),
-            new Move(3, "Knee Slide", 2),
-            new Move(4, "Knee Cut", 2),
-            new Move(5, "Full Mount", 4),
-        };
+            ServiceResponse<Character> response = new ServiceResponse<Character>();
+            try
+            {
+                var moves = new List<CharacterMove>();
+                foreach (var move in newCharacter.CharacterMoves)
+                {
+                    var dbMove = await _context.Moves.FirstOrDefaultAsync(m => m.Id == move.MoveId);
+                    if (dbMove != null)
+                    {
+                        moves.Add(new CharacterMove
+                        {
+                            Move = dbMove
+                        });
+                    }
+                }
 
-        private static List<Move> defaultScramblerMoves = new List<Move>()
-        {
-            new Move(1, "Double Leg", 2),
-            new Move(2, "Single Leg", 2),
-            new Move(6, "Gullotine", 10),
-            new Move(7, "Cartwheel Pass", 3),
-            new Move(8, "Full Mount", 4),
-        };
+                newCharacter.CharacterMoves = moves;
 
-        private static List<Character> characters = new List<Character> {
-            new Character {Id = 1, Name = "Joel" , Class = RpgClass.GuardPasser, Moveset = defaultGuardPasserMoves },
-            new Character {Id = 2, Name = "Ellie" , Class = RpgClass.Scrambler, Moveset = defaultScramblerMoves },
+                await _context.Characters.AddAsync(newCharacter);
+                await _context.SaveChangesAsync();
 
-        
-        };
-        
-
-        public async Task<ServiceResponse<List<Character>>> AddCharacter(Character newCharacter)
-        {
-            var serviceResponse = new ServiceResponse<List<Character>>();
-            var id = characters.Max(c => c.Id) + 1;
-            newCharacter.Id = id;
-            characters.Add(newCharacter);
-            serviceResponse.Data = characters;
-            return serviceResponse;
+                response.Data = newCharacter;
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = ex.Message;
+            }
+            return response;
         }
+
+
 
 
 
@@ -77,55 +92,114 @@ namespace VS_RPG.Services
 
         public async Task<ServiceResponse<Character>> UpdateCharacter(Character updatedCharacter)
         {
-
             var serviceResponse = new ServiceResponse<Character>();
             try
             {
-            
-            var character = characters.FirstOrDefault(c => c.Id == updatedCharacter.Id);
-            if (character == null)
-            {
-                throw new Exception($"Character with Id '{updatedCharacter.Id}' not found");
+                var existingCharacter = await _context.Characters.FindAsync(updatedCharacter.Id);
+
+                if (existingCharacter != null)
+                {
+                    _context.Entry(existingCharacter).CurrentValues.SetValues(updatedCharacter);
+                    await _context.SaveChangesAsync();
+
+                    serviceResponse.Data = updatedCharacter;
+                    serviceResponse.Message = "Character updated successfully";
+                    serviceResponse.Success = true;
+                }
+                else
+                {
+                    serviceResponse.Message = "Character not found";
+                    serviceResponse.Success = false;
+                }
             }
-            character.Name = updatedCharacter.Name;
-            character.HitPoints = updatedCharacter.HitPoints;
-            character.Strength = updatedCharacter.Strength;
-            character.Skill = updatedCharacter.Skill;
-            character.Agility = updatedCharacter.Agility;
-            character.Class = updatedCharacter.Class;
-            character.Moveset = updatedCharacter.Moveset;
-            serviceResponse.Data = character;
-            }
-            catch (Exception ex)
+            catch (Exception e)
             {
+                serviceResponse.Message = $"Character update failed: {e.Message}";
                 serviceResponse.Success = false;
-                serviceResponse.Message = ex.Message;
             }
             return serviceResponse;
         }
 
-        public async Task<ServiceResponse<List<Character>>> DeleteCharacter(int id)
+        public async Task<ServiceResponse<bool>> DeleteCharacter(int id)
         {
-            var serviceResponse = new ServiceResponse<List<Character>>();
+            var serviceResponse = new ServiceResponse<bool>();
             try
             {
-                var character = characters.First(c => c.Id == id);
+                var character = await _context.Characters.Include(c => c.CharacterMoves).FirstOrDefaultAsync(c => c.Id == id);
+                if (character != null)
+                {
+                    foreach (var characterMove in character.CharacterMoves)
+                    {
+                        _context.CharacterMoves.Remove(characterMove);
+                    }
+                    _context.Characters.Remove(character);
+                    await _context.SaveChangesAsync();
+
+                    serviceResponse.Data = true;
+                    serviceResponse.Message = "Character deleted successfully";
+                    serviceResponse.Success = true;
+                }
+                else
+                {
+                    serviceResponse.Message = "Character not found";
+                    serviceResponse.Success = false;
+                }
+            }
+            catch (Exception e)
+            {
+                serviceResponse.Message = $"Character deletion failed: {e.Message}, Inner Exception: {e.InnerException?.Message}";
+                serviceResponse.Success = false;
+            }
+            return serviceResponse;
+        }
+
+
+        public async Task<ServiceResponse<CharacterMove>> AddCharacterMove(int characterId, int moveId)
+        {
+            ServiceResponse<CharacterMove> response = new ServiceResponse<CharacterMove>();
+            try
+            {
+                Character character = await _context.Characters
+                    .Include(c => c.CharacterMoves)
+                    .FirstOrDefaultAsync(c => c.Id == characterId);
+
                 if (character == null)
                 {
-                    throw new Exception($"Character with Id '{id}' not found");
+                    response.Success = false;
+                    response.Message = "Character not found.";
+                    return response;
                 }
-                characters.Remove(character);
-                serviceResponse.Data = characters;
+
+                Move move = await _context.Moves.FirstOrDefaultAsync(m => m.Id == moveId);
+
+                if (move == null)
+                {
+                    response.Success = false;
+                    response.Message = "Move not found.";
+                    return response;
+                }
+
+                CharacterMove characterMove = new CharacterMove
+                {
+                    Character = character,
+                    Move = move
+                };
+
+                await _context.CharacterMoves.AddAsync(characterMove);
+                await _context.SaveChangesAsync();
+
+                response.Data = characterMove;
             }
             catch (Exception ex)
             {
-                serviceResponse.Success = false;
-                serviceResponse.Message = ex.Message;
+                response.Success = false;
+                response.Message = ex.Message;
             }
-            return serviceResponse;
+
+            return response;
 
         }
-        
-   
+
+
     }
-}
+    }

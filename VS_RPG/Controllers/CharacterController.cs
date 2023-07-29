@@ -9,7 +9,8 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
-
+using VS_RPG.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace VS_RPG.Controllers
 {
@@ -18,64 +19,95 @@ namespace VS_RPG.Controllers
     public class CharacterController : ControllerBase
     {
 
+        private readonly DataContext _context;
 
-        
         private static List<Character> characters = new List<Character> {
             new Character(),
             new Character { Id=1, Name = "Gordan Ryan" }
         };
 
-        private ICharacterService characterService;
+        private ICharacterService _characterService;
 
-        public CharacterController(ICharacterService characterService)
+        public CharacterController(DataContext context, ICharacterService characterService)
         {
-            this.characterService = characterService;
+            _context = context;
+            _characterService = characterService;
         }
 
         [HttpGet("GetAll")]
         public async Task<ActionResult<ServiceResponse<List<Character>>>> Get()
         {
-            return Ok(await characterService.GetAllCharacters());
+            ServiceResponse<List<Character>> response = new ServiceResponse<List<Character>>();
+            List<Character> characters = await _context.Characters
+                .Include(c => c.CharacterMoves)
+                .ThenInclude(cm => cm.Move)
+                .ToListAsync();
+            response.Data = characters;
+            return response;
         }
 
-    
+
 
         [HttpGet("{Id}")]
         public async Task<ActionResult<ServiceResponse<Character>>> GetOne(int Id)
         {
-            return Ok(await characterService.GetCharacterById(Id));
-   
-    }
+            return Ok(await _characterService.GetCharacterById(Id));
 
-    [HttpPost]
-    public async Task<ActionResult<ServiceResponse<List<Character>>>> AddCharacter(Character newCharacter)
-    {
-        return Ok(await characterService.AddCharacter(newCharacter));
-    }
-
-    [HttpPut]
-    public async Task<ActionResult<ServiceResponse<Character>>> UpdateCharacter(Character updatedCharacter)
-    {
-        var response = await characterService.UpdateCharacter(updatedCharacter);
-        if (response.Data == null)
-        {
-            return NotFound(response);
         }
-        return Ok(response);
-    }
 
-     [HttpDelete("{id}")]
-    public async Task<ActionResult<ServiceResponse<List<Character>>>> DeleteCharacter(int id)
-    {
-        var response = await characterService.DeleteCharacter(id);
-        if (response.Data == null)
+        [HttpPost]
+        public async Task<ActionResult<ServiceResponse<Character>>> AddCharacter(Character newCharacter)
         {
-            return NotFound(response);
+            ServiceResponse<Character> response = new ServiceResponse<Character>();
+            try
+            {
+                await _context.Characters.AddAsync(newCharacter);
+                await _context.SaveChangesAsync();
+                response.Data = newCharacter;
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = ex.Message;
+            }
+
+            return response;
         }
-        return Ok(response);
+
+
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<ServiceResponse<Character>>> UpdateCharacter(Character updatedCharacter)
+        {
+            var response = await _characterService.UpdateCharacter(updatedCharacter);
+            if (response.Data == null)
+            {
+                return NotFound(response);
+            }
+            return Ok(response);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<ServiceResponse<bool>>> DeleteCharacter(int id)
+        {
+            var response = await _characterService.DeleteCharacter(id);
+
+            return Ok(response);
+        }
+
+
+        [HttpPost("{characterId}/moves")]
+        public async Task<ActionResult<ServiceResponse<Character>>> AddCharacterMove(int characterId, int moveId)
+        {
+            var response = await _characterService?.AddCharacterMove(characterId, moveId);
+
+            if (response== null || response.Data == null)
+            {
+                return NotFound(response);
+            }
+
+            return Ok(response);
+        }
+
     }
-}
-
-   
-
 }

@@ -12,13 +12,9 @@ namespace VS_RPG.Models
     public int Id { get; set; }
     public string Name { get; set; }
     public int Points { get; set; }
+    public List<CharacterMove> CharacterMoves { get; set; }
 
-    public Move(int id, string name, int points)
-    {
-        this.Id = id;
-        this.Name = name;
-        this.Points = points;
-    }
+    
 }
 
 }
