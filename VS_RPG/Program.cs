@@ -25,6 +25,7 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<ICharacterService, CharacterService>();
+builder.Services.AddScoped<IMoveService, MoveService>();
 
 var app = builder.Build();
 

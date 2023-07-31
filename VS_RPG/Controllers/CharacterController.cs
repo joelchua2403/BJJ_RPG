@@ -21,10 +21,6 @@ namespace VS_RPG.Controllers
 
         private readonly DataContext _context;
 
-        private static List<Character> characters = new List<Character> {
-            new Character(),
-            new Character { Id=1, Name = "Gordan Ryan" }
-        };
 
         private ICharacterService _characterService;
 
