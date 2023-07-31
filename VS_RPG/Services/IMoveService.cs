@@ -10,7 +10,7 @@ namespace VS_RPG.Services
         Task<ServiceResponse<MoveDto>> CreateMove(MoveDto newMoveDto);
         Task<ServiceResponse<List<MoveDto>>> GetAllMoves();
         Task<ServiceResponse<MoveDto>> GetMoveById(int id);
-        Task<ServiceResponse<MoveDto>> DeleteMove(int id);
+        Task<ServiceResponse<int>> DeleteMove(int id);
         //Task<ServiceResponse<MoveDto>> UpdateMove(int id, MoveDto updatedMoveDto);
     }
 }

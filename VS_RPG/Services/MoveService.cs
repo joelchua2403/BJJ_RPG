@@ -46,9 +46,34 @@ namespace VS_RPG.Services
             return response;
 		}
 
-        public Task<ServiceResponse<MoveDto>> DeleteMove(int id)
+        public async Task<ServiceResponse<int>> DeleteMove(int id)
         {
-            throw new NotImplementedException();
+
+            ServiceResponse<int> response = new ServiceResponse<int>();
+
+            try
+            {
+                Move move = await _context.Moves.FirstOrDefaultAsync(m => m.Id == id);
+                if (move != null)
+                {
+                    _context.Moves.Remove(move);
+                    await _context.SaveChangesAsync();
+                    response.Data = move.Id;
+                    response.Message = "Move successfully deleted.";
+                }
+                else
+                {
+                    response.Success = false;
+                    response.Message = "Move not found.";
+                }
+
+            }
+            catch (Exception ex)
+            {
+                response.Message = ex.Message;
+                response.Success = false;
+            }
+            return response;
         }
 
         public async Task<ServiceResponse<List<MoveDto>>> GetAllMoves()

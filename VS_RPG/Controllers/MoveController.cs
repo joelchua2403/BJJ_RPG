@@ -50,6 +50,19 @@ namespace VS_RPG.Controllers
 
 
         }
+
+
+		[HttpDelete]
+		public async Task<ActionResult<ServiceResponse<int>>> DeleteMove(int id)
+		{
+			var response = await _moveService.DeleteMove(id);
+            if (!response.Success)
+            {
+                return BadRequest(response);
+            }
+
+            return Ok(response);
+        }
     }
 
 }
