@@ -77,9 +77,9 @@ namespace VS_RPG.Controllers
 
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ServiceResponse<Character>>> UpdateCharacter(Character updatedCharacter)
+        public async Task<ActionResult<ServiceResponse<Character>>> UpdateCharacter(int id, Character updatedCharacter)
         {
-            var response = await _characterService.UpdateCharacter(updatedCharacter);
+            var response = await _characterService.UpdateCharacter(id, updatedCharacter);
             if (response.Data == null)
             {
                 return NotFound(response);
@@ -101,7 +101,7 @@ namespace VS_RPG.Controllers
         {
             var response = await _characterService?.AddCharacterMove(characterId, moveId);
 
-            if (response== null || response.Data == null)
+            if (response == null || response.Data == null)
             {
                 return NotFound(response);
             }

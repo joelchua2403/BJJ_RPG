@@ -11,7 +11,7 @@ namespace VS_RPG.Services
         Task<ServiceResponse<List<Character>>> GetAllCharacters();
         Task<ServiceResponse<Character>> GetCharacterById(int id);
         Task<ServiceResponse<Character>> AddCharacter(Character newCharacter);
-        Task<ServiceResponse<Character>> UpdateCharacter(Character updatedCharacter);
+        Task<ServiceResponse<Character>> UpdateCharacter(int id, Character updatedCharacter);
         Task<ServiceResponse<bool>> DeleteCharacter(int id);
         Task<ServiceResponse<CharacterMove>> AddCharacterMove(int characterId, int moveId);
     }
