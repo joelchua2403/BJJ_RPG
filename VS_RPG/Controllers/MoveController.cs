@@ -36,6 +36,13 @@ namespace VS_RPG.Controllers
 
 		}
 
+		[HttpGet("{Id}")]
+		public async Task<ActionResult<ServiceResponse<MoveDto>>> GetOneMove(int Id)
+		{
+			return Ok(await _moveService.GetMoveById(Id));
+		}
+
+
 		[HttpGet]
 		public async Task<ActionResult<ServiceResponse<List<MoveDto>>>> GetAllMoves()
 		{

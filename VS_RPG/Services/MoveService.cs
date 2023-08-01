@@ -99,15 +99,36 @@ namespace VS_RPG.Services
 
         }
 
-            public Task<ServiceResponse<MoveDto>> GetMoveById(int id)
+            public async Task<ServiceResponse<MoveDto>> GetMoveById(int id)
         {
-            throw new NotImplementedException();
+            ServiceResponse<MoveDto> response = new ServiceResponse<MoveDto>();
+            try
+            {
+                Move move = await _context.Moves.FirstOrDefaultAsync(m => m.Id == id);
+                if (move == null)
+                {
+                    response.Success = false;
+                    response.Message = "Move not found.";
+                }
+                else
+                {
+                    response.Data = new MoveDto
+                    {
+                        Id = move.Id,
+                        Name = move.Name,
+                        Points = move.Points
+                    };
+                }
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = ex.Message;
+            }
+            return response;
         }
 
-        //public Task<ServiceResponse<MoveDto>> UpdateMove(int id, Move updatedMoveDto)
-        //{
-        //    throw new NotImplementedException();
-        //}
+       
     }
 	}
 
