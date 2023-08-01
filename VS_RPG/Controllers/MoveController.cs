@@ -36,10 +36,10 @@ namespace VS_RPG.Controllers
 
 		}
 
-		[HttpGet("{Id}")]
-		public async Task<ActionResult<ServiceResponse<MoveDto>>> GetOneMove(int Id)
+		[HttpGet("{id}")]
+		public async Task<ActionResult<ServiceResponse<MoveDto>>> GetOneMove(int id)
 		{
-			return Ok(await _moveService.GetMoveById(Id));
+			return Ok(await _moveService.GetMoveById(id));
 		}
 
 
@@ -57,6 +57,12 @@ namespace VS_RPG.Controllers
 
 
         }
+
+		[HttpPut("{id}")]
+		public async Task<ActionResult<ServiceResponse<MoveDto>>> UpdateMove(int id, MoveDto updatedMoveDto)
+		{
+			return Ok(await _moveService.UpdateMove(id, updatedMoveDto));
+		}
 
 
 		[HttpDelete]

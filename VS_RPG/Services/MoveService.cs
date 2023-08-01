@@ -128,6 +128,41 @@ namespace VS_RPG.Services
             return response;
         }
 
+        public async Task<ServiceResponse<MoveDto>> UpdateMove(int id, MoveDto updatedMoveDto)
+        {
+            ServiceResponse<MoveDto> response = new ServiceResponse<MoveDto>();
+            try
+            {
+                Move move = await _context.Moves.FirstOrDefaultAsync(m => m.Id == id);
+                if (move == null)
+                {
+                    response.Message = "Move not found.";
+                    response.Success = false;
+                    return response;
+                }
+                else
+                {
+                    move.Name = updatedMoveDto.Name;
+                    move.Points = updatedMoveDto.Points;
+                    _context.Moves.Update(move);
+                    await _context.SaveChangesAsync();
+                    response.Data = new MoveDto
+                    {
+                        Id = move.Id,
+                        Name = move.Name,
+                        Points = move.Points
+                    };
+                }
+
+                
+            }
+            catch (Exception ex)
+            {
+                response.Success = false;
+                response.Message = ex.Message;
+            }
+            return response;
+        }
        
     }
 	}
