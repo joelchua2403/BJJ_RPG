@@ -8,6 +8,9 @@ using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.OpenApi.Models;
+using System.Collections.Generic;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,6 +50,36 @@ builder.Services.AddAuthentication(x =>
         ValidateIssuer = false,
         ValidateAudience = false
     };
+});
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
+    // Define the BearerAuth scheme
+    c.AddSecurityDefinition("BearerAuth", new OpenApiSecurityScheme
+    {
+        Type = SecuritySchemeType.Http,  // We set the scheme type to Http since we're using Bearer Authentication
+        Scheme = "bearer",  // The name of the HTTP Authorization scheme to be used in the Authorization header. In our case, "bearer".
+        BearerFormat = "JWT",  // The hint to the client to identify how the bearer token is formatted.
+        In = ParameterLocation.Header,  // The location of the API key. In our case, it's in the header.
+        Description = "Input your JWT like: Bearer {your jwt token}"
+    });
+
+    // Apply the BearerAuth scheme to all methods
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "BearerAuth"
+                }
+            }, new List<string>()
+        }
+    });
 });
 
 

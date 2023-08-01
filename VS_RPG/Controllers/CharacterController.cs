@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Http;
 using VS_RPG.Data;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authorization;
 
 namespace VS_RPG.Controllers
 {
@@ -30,6 +31,7 @@ namespace VS_RPG.Controllers
             _characterService = characterService;
         }
 
+        [Authorize]
         [HttpGet("GetAll")]
         public async Task<ActionResult<ServiceResponse<List<Character>>>> Get()
         {
@@ -43,7 +45,7 @@ namespace VS_RPG.Controllers
         }
 
 
-
+        [Authorize]
         [HttpGet("{Id}")]
         public async Task<ActionResult<ServiceResponse<Character>>> GetOne(int Id)
         {
@@ -51,6 +53,7 @@ namespace VS_RPG.Controllers
 
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<ServiceResponse<Character>>> AddCharacter(Character newCharacter)
         {
@@ -71,7 +74,7 @@ namespace VS_RPG.Controllers
         }
 
 
-
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<ActionResult<ServiceResponse<Character>>> UpdateCharacter(int id, Character updatedCharacter)
         {
@@ -83,6 +86,7 @@ namespace VS_RPG.Controllers
             return Ok(response);
         }
 
+        [Authorize]
         [HttpDelete("{id}")]
         public async Task<ActionResult<ServiceResponse<bool>>> DeleteCharacter(int id)
         {
@@ -91,7 +95,7 @@ namespace VS_RPG.Controllers
             return Ok(response);
         }
 
-
+        [Authorize]
         [HttpPost("{characterId}/moves")]
         public async Task<ActionResult<ServiceResponse<Character>>> AddCharacterMove(int characterId, int moveId)
         {

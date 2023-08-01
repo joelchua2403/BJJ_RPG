@@ -1,4 +1,5 @@
 ﻿using System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using VS_RPG.Data;
 using VS_RPG.DTO;
@@ -20,8 +21,8 @@ namespace VS_RPG.Controllers
 			_moveService = moveService;
 		}
 
-
-		[HttpPost]
+        [Authorize]
+        [HttpPost]
 		public async Task<ActionResult<ServiceResponse<MoveDto>>> CreateMove(MoveDto newMove)
 		{
 			var response = await _moveService.CreateMove(newMove);
@@ -36,13 +37,14 @@ namespace VS_RPG.Controllers
 
 		}
 
-		[HttpGet("{id}")]
+        [Authorize]
+        [HttpGet("{id}")]
 		public async Task<ActionResult<ServiceResponse<MoveDto>>> GetOneMove(int id)
 		{
 			return Ok(await _moveService.GetMoveById(id));
 		}
 
-
+		[Authorize]
 		[HttpGet]
 		public async Task<ActionResult<ServiceResponse<List<MoveDto>>>> GetAllMoves()
 		{
@@ -58,14 +60,15 @@ namespace VS_RPG.Controllers
 
         }
 
-		[HttpPut("{id}")]
+        [Authorize]
+        [HttpPut("{id}")]
 		public async Task<ActionResult<ServiceResponse<MoveDto>>> UpdateMove(int id, MoveDto updatedMoveDto)
 		{
 			return Ok(await _moveService.UpdateMove(id, updatedMoveDto));
 		}
 
-
-		[HttpDelete]
+        [Authorize]
+        [HttpDelete]
 		public async Task<ActionResult<ServiceResponse<int>>> DeleteMove(int id)
 		{
 			var response = await _moveService.DeleteMove(id);
