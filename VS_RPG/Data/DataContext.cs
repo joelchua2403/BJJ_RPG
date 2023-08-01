@@ -13,6 +13,7 @@ namespace VS_RPG.Data
         public DbSet<Character> Characters => Set<Character>();
         public DbSet<Move> Moves { get; set; }
         public DbSet<CharacterMove> CharacterMoves { get; set; }
+        public DbSet<User> Users { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
